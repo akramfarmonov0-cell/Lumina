@@ -21,15 +21,30 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// Product Table
+// Product Specifications Type
+export const productSpecSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+});
+
+export type ProductSpec = z.infer<typeof productSpecSchema>;
+
+// Product Table with extended fields
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   price: integer("price").notNull(),
   description: text("description").notNull(),
+  shortDescription: text("short_description"),
+  fullDescription: text("full_description"),
   imageUrl: text("image_url").notNull(),
+  gallery: json("gallery").$type<string[]>().default([]),
+  videoUrl: text("video_url"),
   category: text("category").notNull(),
+  brand: text("brand"),
+  stock: integer("stock").default(0),
   tags: json("tags").$type<string[]>().default([]).notNull(),
+  specs: json("specs").$type<ProductSpec[]>().default([]),
   aiAnalysis: json("ai_analysis").$type<{
     sentiment: string;
     keywords: string[];
@@ -40,9 +55,11 @@ export const products = pgTable("products", {
     seoTitle: string;
     seoDescription: string;
   }>(),
+  marketingCopy: text("marketing_copy"),
   isFlashSale: boolean("is_flash_sale").default(false).notNull(),
   flashSalePrice: integer("flash_sale_price"),
   flashSaleEnds: timestamp("flash_sale_ends"),
+  flashSaleMarketingText: text("flash_sale_marketing_text"),
   telegramPostedAt: timestamp("telegram_posted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -55,6 +72,10 @@ export const telegramLogs = pgTable("telegram_logs", {
   caption: text("caption").notNull(),
   marketingVariantA: text("marketing_variant_a"),
   marketingVariantB: text("marketing_variant_b"),
+  shortDescription: text("short_description"),
+  videoUrl: text("video_url"),
+  specsHighlights: json("specs_highlights").$type<string[]>().default([]),
+  isCarousel: boolean("is_carousel").default(false),
   status: text("status").notNull().default("sent"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -74,6 +95,21 @@ export const insertProductSchema = createInsertSchema(products).omit({
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
+
+// User Session Table for authentication
+export const sessions = pgTable("sessions", {
+  id: varchar("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertSessionSchema = createInsertSchema(sessions).omit({
+  createdAt: true,
+});
+
+export type InsertSession = z.infer<typeof insertSessionSchema>;
+export type Session = typeof sessions.$inferSelect;
 
 // Order Table
 export const orders = pgTable("orders", {
@@ -129,3 +165,24 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export const productsRelations = relations(products, ({ many }) => ({
   orderItems: many(orderItems),
 }));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+// Search filters type
+export interface ProductSearchFilters {
+  query?: string;
+  category?: string;
+  brand?: string;
+  tags?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+}

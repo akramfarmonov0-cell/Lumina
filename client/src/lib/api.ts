@@ -145,11 +145,18 @@ export async function updateOrderStatus(id: number, status: string): Promise<Ord
 }
 
 // Auth API
-export async function login(username: string, password: string) {
+export interface AuthUser {
+  id: string;
+  username: string;
+  isAdmin: boolean;
+}
+
+export async function login(username: string, password: string): Promise<{ user: AuthUser }> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
+    credentials: "include",
   });
   if (!res.ok) {
     const error = await res.json();
@@ -158,15 +165,76 @@ export async function login(username: string, password: string) {
   return res.json();
 }
 
-export async function register(username: string, password: string) {
+export async function register(username: string, password: string): Promise<{ user: AuthUser }> {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
+    credentials: "include",
   });
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || "Ro'yxatdan o'tish muvaffaqiyatsiz");
   }
+  return res.json();
+}
+
+export async function logout(): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new Error("Chiqishda xatolik");
+  }
+  return res.json();
+}
+
+export async function getCurrentUser(): Promise<{ user: AuthUser | null }> {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    credentials: "include",
+  });
+  if (!res.ok) {
+    return { user: null };
+  }
+  return res.json();
+}
+
+export async function getRelatedProducts(productId: number, limit: number = 4): Promise<Product[]> {
+  const res = await fetch(`${API_BASE}/products/${productId}/related?limit=${limit}`);
+  if (!res.ok) throw new Error("O'xshash mahsulotlarni yuklab bo'lmadi");
+  return res.json();
+}
+
+export async function advancedSearch(params: {
+  query?: string;
+  category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  tags?: string[];
+}): Promise<Product[]> {
+  const searchParams = new URLSearchParams();
+  if (params.query) searchParams.set("q", params.query);
+  if (params.category) searchParams.set("category", params.category);
+  if (params.brand) searchParams.set("brand", params.brand);
+  if (params.minPrice !== undefined) searchParams.set("minPrice", params.minPrice.toString());
+  if (params.maxPrice !== undefined) searchParams.set("maxPrice", params.maxPrice.toString());
+  if (params.tags?.length) searchParams.set("tags", params.tags.join(","));
+
+  const res = await fetch(`${API_BASE}/products/search?${searchParams.toString()}`);
+  if (!res.ok) throw new Error("Qidirishda xatolik");
+  return res.json();
+}
+
+export async function getCategories(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/categories`);
+  if (!res.ok) throw new Error("Kategoriyalarni yuklab bo'lmadi");
+  return res.json();
+}
+
+export async function getBrands(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/brands`);
+  if (!res.ok) throw new Error("Brendlarni yuklab bo'lmadi");
   return res.json();
 }

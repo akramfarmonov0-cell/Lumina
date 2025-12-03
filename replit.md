@@ -43,7 +43,15 @@ The backend follows a traditional Express.js server architecture with TypeScript
   - `server/db.ts`: Database connection and configuration
 - **API Design**: RESTful endpoints for products, orders, and AI analysis
 - **File Upload**: Multer middleware for handling product image uploads (5MB limit)
-- **Authentication**: Password hashing using Node.js crypto scrypt with salt
+- **Authentication**: Session-based authentication system
+  - express-session for session management
+  - memorystore for session storage
+  - Password hashing using Node.js crypto scrypt with salt
+  - requireAuth and requireAdmin middleware for route protection
+- **Frontend Auth**: 
+  - AuthProvider context for global auth state
+  - useAuth hook for authentication operations
+  - Protected routes with automatic redirects
 
 **Design Decisions**:
 - Storage layer abstraction (IStorage interface) allows for easier testing and potential database swapping
@@ -155,3 +163,13 @@ Production build process optimized for Replit deployment:
   - @replit/vite-plugin-runtime-error-modal for error overlay
 - **Custom Plugins**:
   - vite-plugin-meta-images for OpenGraph image updates
+
+## Recent Changes (December 2025)
+
+- Extended product schema with new fields: shortDescription, fullDescription, gallery, videoUrl, stock, brand, specs, flashSaleMarketingText
+- Implemented session-based admin authentication system
+- Created frontend AuthProvider and useAuth hook
+- Added login page with login/register tabs
+- Updated layout component with user authentication status display
+- Protected admin routes require admin privileges
+- Added API endpoints: /api/auth/me, /api/auth/logout, /api/categories, /api/brands, /api/products/:id/related
