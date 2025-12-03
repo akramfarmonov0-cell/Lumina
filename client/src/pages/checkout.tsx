@@ -9,7 +9,7 @@ import { createOrder } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ShoppingBag, Minus, Plus, Trash2, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Minus, Plus, Trash2, Loader2, CheckCircle, ArrowLeft, Truck, Phone, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Checkout() {
@@ -240,9 +240,29 @@ export default function Checkout() {
                         <span className="text-muted-foreground">Mahsulotlar:</span>
                         <span>{items.reduce((sum, i) => sum + i.quantity, 0)} ta</span>
                       </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Yetkazib berish:</span>
+                        <span className="text-green-600">Bepul</span>
+                      </div>
                       <div className="flex justify-between text-lg font-bold">
                         <span>Jami:</span>
                         <span className="text-primary" data-testid="text-total-price">${totalPrice}</span>
+                      </div>
+                    </div>
+
+                    {/* Delivery Info */}
+                    <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-3 text-sm">
+                        <Truck className="w-4 h-4 text-primary" />
+                        <span>1-3 kun ichida yetkazib beramiz</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <Phone className="w-4 h-4 text-primary" />
+                        <span>+998 71 123 45 67</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <ShieldCheck className="w-4 h-4 text-primary" />
+                        <span>100% sifat kafolati</span>
                       </div>
                     </div>
                   </CardContent>

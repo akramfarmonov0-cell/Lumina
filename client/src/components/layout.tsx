@@ -35,11 +35,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-3 group cursor-pointer">
               <img 
                 src={assets.logo} 
-                alt="Lumina AI" 
+                alt="Lumina" 
                 className="h-10 w-10 rounded-lg object-cover border border-primary/20 group-hover:border-primary/50 transition-all shadow-[0_0_15px_-5px_var(--color-primary)]" 
               />
               <span className="font-display font-bold text-xl tracking-wide">
-                Lumina<span className="text-primary">.AI</span>
+                Lumina<span className="text-primary">.</span>
               </span>
             </div>
           </Link>
@@ -57,7 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
             <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-              AI Haqida
+              Biz Haqimizda
             </span>
           </nav>
 
@@ -67,7 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <input 
                 type="text" 
-                placeholder="Neyron Qidiruv..." 
+                placeholder="Mahsulot qidirish..." 
                 className="h-9 w-64 rounded-full bg-secondary/50 border border-border pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
@@ -148,33 +148,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
              <span className="font-display font-bold text-xl tracking-wide">
-                Lumina<span className="text-primary">.AI</span>
+                Lumina<span className="text-primary">.</span>
               </span>
               <p className="mt-4 text-sm text-muted-foreground">
-                Ilg'or neyron tarmoqlar asosida ishlaydigan keyingi avlod elektron tijorati.
+                Premium sifatli texnologiyalar do'koni. Eng yaxshi mahsulotlar, eng yaxshi narxlar.
               </p>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Platforma</h4>
+            <h4 className="font-bold mb-4">Xizmatlar</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Neyron Qidiruv</li>
-              <li>AI Analitika</li>
-              <li>Bashoratli Zaxira</li>
+              <li>Tezkor Qidiruv</li>
+              <li>Sifat Kafolati</li>
+              <li>Bepul Yetkazib Berish</li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold mb-4">Kompaniya</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Biz Haqimizda</li>
-              <li>Karyera</li>
-              <li>Huquqiy</li>
+              <li>Aloqa</li>
+              <li>Yordam</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Xavfsizlik</h4>
+            <h4 className="font-bold mb-4">Kafolat</h4>
             <div className="flex items-center gap-2 text-primary/80">
               <ShieldCheck className="h-5 w-5" />
-              <span className="text-sm">Sentinel AI tomonidan tasdiqlangan</span>
+              <span className="text-sm">100% Sifat Kafolati</span>
             </div>
           </div>
         </div>

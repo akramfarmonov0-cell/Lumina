@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, ArrowRight, BrainCircuit, ShoppingCart, ShieldCheck, Check } from "lucide-react";
+import { Zap, ArrowRight, Award, ShoppingCart, ShieldCheck, Check, Truck, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,17 +55,17 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <Badge variant="outline" className="mb-6 border-primary/50 text-primary bg-primary/10 backdrop-blur-md px-4 py-1.5 text-sm">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Gemini 1.5 Pro tomonidan quvvatlangan
+                <Star className="w-4 h-4 mr-2" />
+                Premium Texnologiyalar Do'koni
               </Badge>
               <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                Aqlli Tijoratning <br />
+                Eng Yaxshi <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent glow-text">
-                  Kelajagi
+                  Texnologiyalar
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground mb-8 max-w-xl">
-                Savdo evolyutsiyasini his qiling. Bizning AI trendlarni tahlil qiladi, sifatni bashorat qiladi va sizning turmush tarzingiz uchun mukammal texnikani tanlaydi.
+                Premium sifatli mahsulotlar, arzon narxlar va tezkor yetkazib berish. Siz uchun eng yaxshi tanlovlar.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button 
@@ -77,7 +77,7 @@ export default function Home() {
                   Xaridni Boshlash <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 rounded-full border-primary/20 hover:bg-primary/5">
-                  AI Analitikani Ko'rish
+                  Katalogni Ko'rish
                 </Button>
               </div>
             </motion.div>
@@ -94,19 +94,19 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: BrainCircuit,
-                title: "Neyron Tahlil",
-                desc: "Har bir mahsulot sifat nazorati va his-tuyg'ular tahlili uchun AI tomonidan tekshiriladi."
+                icon: Award,
+                title: "Premium Sifat",
+                desc: "Har bir mahsulot sinchkovlik bilan tekshirilgan va sifat standartlariga mos keladi."
               },
               {
-                icon: Zap,
-                title: "Tezkor Logistika",
-                desc: "Bashoratli yetkazib berish algoritmlari buyurtmangizni sizga kerak bo'lishidan oldin yetkazilishini ta'minlaydi."
+                icon: Truck,
+                title: "Tezkor Yetkazish",
+                desc: "1-3 kun ichida bepul yetkazib berish. Buyurtmangizni tez va xavfsiz qabul qiling."
               },
               {
                 icon: ShieldCheck,
-                title: "Xavfsiz Tranzaksiyalar",
-                desc: "Blokcheyn orqali tasdiqlangan xarid tarixi va shaxsni himoya qilish."
+                title: "Xavfsiz To'lov",
+                desc: "100% xavfsiz to'lov tizimlari va ma'lumotlaringiz himoyasi kafolatlangan."
               }
             ].map((feature, idx) => (
               <div key={idx} className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all hover:bg-secondary/50 group">
@@ -166,14 +166,12 @@ export default function Home() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent opacity-60" />
                     
-                    {/* AI Badge Overlay */}
-                    {product.aiAnalysis && (
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-background/50 backdrop-blur-md border border-primary/30 text-primary text-xs">
-                          AI: {product.aiAnalysis.sentiment}
-                        </Badge>
-                      </div>
-                    )}
+                    {/* Quality Badge */}
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-background/50 backdrop-blur-md border border-primary/30 text-primary text-xs">
+                        <Star className="w-3 h-3 mr-1" /> Premium
+                      </Badge>
+                    </div>
                   </div>
 
                   {/* Content */}
@@ -185,13 +183,13 @@ export default function Home() {
                       {product.title}
                     </h3>
                     
-                    {/* AI Analysis Mini */}
-                    {product.aiAnalysis && (
+                    {/* Product Tags */}
+                    {product.tags && product.tags.length > 0 && (
                       <div className="mb-4 space-y-1">
                         <div className="flex flex-wrap gap-1">
-                          {product.aiAnalysis.keywords.slice(0, 2).map(kw => (
-                            <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground border border-border">
-                              #{kw}
+                          {product.tags.slice(0, 2).map((tag: string) => (
+                            <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground border border-border">
+                              #{tag}
                             </span>
                           ))}
                         </div>
