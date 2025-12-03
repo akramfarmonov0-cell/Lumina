@@ -12,6 +12,9 @@ import Home from "@/pages/home";
 import Admin from "@/pages/admin";
 import Checkout from "@/pages/checkout";
 import Login from "@/pages/login";
+import ProductPage from "@/pages/product";
+import FlashSalesPage from "@/pages/flash-sales";
+import Forbidden from "@/pages/forbidden";
 import { Link } from "wouter";
 
 function ProtectedAdminRoute({ component: Component }: { component: React.ComponentType }) {
@@ -30,15 +33,7 @@ function ProtectedAdminRoute({ component: Component }: { component: React.Compon
   }
 
   if (!isAdmin) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
-        <h1 className="text-2xl font-bold">Ruxsat berilmagan</h1>
-        <p className="text-muted-foreground">Admin huquqi talab qilinadi</p>
-        <Link href="/" className="text-primary underline">
-          Bosh sahifaga qaytish
-        </Link>
-      </div>
-    );
+    return <Forbidden />;
   }
 
   return <Component />;
@@ -50,6 +45,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/login" component={Login} />
+      <Route path="/product/:id" component={ProductPage} />
+      <Route path="/flash-sales" component={FlashSalesPage} />
       <Route path="/admin">
         <ProtectedAdminRoute component={Admin} />
       </Route>

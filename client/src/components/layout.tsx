@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { assets } from "@/lib/mock-data";
-import { ShoppingCart, Search, User, Menu, ShieldCheck, Sun, Moon, LogOut, LogIn } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, ShieldCheck, Sun, Moon, LogOut, LogIn, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -61,6 +61,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Link href="/">
               <span className={`text-sm font-medium hover:text-primary transition-colors cursor-pointer ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`}>
                 Do'kon
+              </span>
+            </Link>
+            <Link href="/flash-sales">
+              <span className={`text-sm font-medium hover:text-red-500 transition-colors cursor-pointer flex items-center gap-1 ${location === '/flash-sales' ? 'text-red-500' : 'text-muted-foreground'}`}>
+                <Flame className="w-4 h-4" /> Flash Sale
               </span>
             </Link>
             {isAdmin && (
@@ -173,6 +178,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <nav className="flex flex-col gap-4 mt-8">
                   <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                     <span className="text-lg font-medium cursor-pointer">Do'kon</span>
+                  </Link>
+                  <Link href="/flash-sales" onClick={() => setIsMobileMenuOpen(false)}>
+                    <span className="text-lg font-medium cursor-pointer text-red-500 flex items-center gap-2">
+                      <Flame className="w-5 h-5" /> Flash Sale
+                    </span>
                   </Link>
                   {isAdmin && (
                     <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>

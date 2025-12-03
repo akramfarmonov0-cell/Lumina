@@ -7,8 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-import { Upload, Loader2, CheckCircle, BarChart3, Trash2, Send, Play, Pause, Clock, Flame, DollarSign, MessageSquare, Zap, Package, ShoppingBag, TrendingUp } from "lucide-react";
+import { 
+  Upload, 
+  Loader2, 
+  CheckCircle, 
+  Trash2, 
+  Send, 
+  Play, 
+  Pause, 
+  Clock, 
+  Flame, 
+  MessageSquare, 
+  Zap, 
+  Package, 
+  ShoppingBag, 
+  TrendingUp,
+  Plus,
+  X,
+  Image,
+  Video,
+  Tag,
+  Boxes,
+  Edit
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
@@ -28,13 +52,23 @@ import {
 } from "@/lib/api";
 import type { Product, Order } from "@shared/schema";
 
+interface ProductSpec {
+  label: string;
+  value: string;
+}
+
 export default function Admin() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [aiData, setAiData] = useState<any>(null);
   const [flashSaleProductId, setFlashSaleProductId] = useState<number | null>(null);
   const [flashSalePrice, setFlashSalePrice] = useState("");
+  const [specs, setSpecs] = useState<ProductSpec[]>([]);
+  const [newSpecLabel, setNewSpecLabel] = useState("");
+  const [newSpecValue, setNewSpecValue] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -64,9 +98,7 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({ title: "Mahsulot Yaratildi", description: "Mahsulot muvaffaqiyatli qo'shildi." });
-      setPreview(null);
-      setSelectedFile(null);
-      setAiData(null);
+      resetForm();
     },
     onError: (error: Error) => {
       toast({ title: "Xatolik", description: error.message, variant: "destructive" });
@@ -146,6 +178,15 @@ export default function Admin() {
     },
   });
 
+  const resetForm = () => {
+    setPreview(null);
+    setSelectedFile(null);
+    setGalleryFiles([]);
+    setGalleryPreviews([]);
+    setAiData(null);
+    setSpecs([]);
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -171,22 +212,62 @@ export default function Admin() {
     }
   };
 
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setGalleryFiles(prev => [...prev, ...files]);
+      
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setGalleryPreviews(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+    setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addSpec = () => {
+    if (newSpecLabel && newSpecValue) {
+      setSpecs(prev => [...prev, { label: newSpecLabel, value: newSpecValue }]);
+      setNewSpecLabel("");
+      setNewSpecValue("");
+    }
+  };
+
+  const removeSpec = (index: number) => {
+    setSpecs(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!selectedFile) {
-      toast({ title: "Xatolik", description: "Iltimos, rasm yuklang", variant: "destructive" });
+      toast({ title: "Xatolik", description: "Iltimos, asosiy rasm yuklang", variant: "destructive" });
       return;
     }
 
     const formData = new FormData(e.currentTarget);
     formData.append("image", selectedFile);
+    
+    galleryFiles.forEach(file => {
+      formData.append("gallery", file);
+    });
+    
+    if (specs.length > 0) {
+      formData.set("specs", JSON.stringify(specs));
+    }
+
     createProductMutation.mutate(formData);
   };
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
   const newOrders = orders.filter(o => o.status === "yangi").length;
-  const completedOrders = orders.filter(o => o.status === "bajarildi").length;
 
   return (
     <Layout>
@@ -198,11 +279,10 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Mahsulotlar</p>
                   <p className="text-2xl font-bold">{products.length}</p>
@@ -213,7 +293,7 @@ export default function Admin() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Buyurtmalar</p>
                   <p className="text-2xl font-bold">{orders.length}</p>
@@ -224,7 +304,7 @@ export default function Admin() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Daromad</p>
                   <p className="text-2xl font-bold">${totalRevenue}</p>
@@ -235,7 +315,7 @@ export default function Admin() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Yangi Buyurtmalar</p>
                   <p className="text-2xl font-bold">{newOrders}</p>
@@ -254,10 +334,9 @@ export default function Admin() {
             <TabsTrigger value="flash-sale" data-testid="tab-flash-sale">Flash Sale</TabsTrigger>
           </TabsList>
 
-          {/* Products Tab */}
           <TabsContent value="products">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              <div className="xl:col-span-2">
                 <Card>
                   <CardHeader>
                     <CardTitle>Yangi Mahsulot Qo'shish</CardTitle>
@@ -265,62 +344,193 @@ export default function Admin() {
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                      <div className="space-y-2">
-                        <Label>Mahsulot Rasmi</Label>
-                        <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors relative group bg-secondary/20">
-                          <input 
-                            type="file" 
-                            accept="image/*"
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            onChange={handleImageUpload}
-                            required
-                            data-testid="input-product-image"
-                          />
-                          {preview ? (
-                            <div className="relative h-64 w-full">
-                              <img src={preview} className="h-full w-full object-contain rounded-lg" alt="Preview" />
-                              {isAnalyzing && (
-                                <div className="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm rounded-lg">
-                                  <div className="flex flex-col items-center gap-2">
-                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                    <span className="text-sm font-medium animate-pulse">Tayyorlanmoqda...</span>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Image className="w-4 h-4" /> Asosiy Rasm *
+                          </Label>
+                          <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors relative group bg-secondary/20">
+                            <input 
+                              type="file" 
+                              accept="image/*"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              onChange={handleImageUpload}
+                              data-testid="input-product-image"
+                            />
+                            {preview ? (
+                              <div className="relative h-48 w-full">
+                                <img src={preview} className="h-full w-full object-contain rounded-lg" alt="Preview" />
+                                {isAnalyzing && (
+                                  <div className="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm rounded-lg">
+                                    <div className="flex flex-col items-center gap-2">
+                                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                      <span className="text-sm font-medium animate-pulse">AI tahlil qilmoqda...</span>
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="py-8">
-                              <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4 group-hover:text-primary transition-colors" />
-                              <p className="text-sm text-muted-foreground">Yuklash uchun bosing yoki rasmni tashlang</p>
-                            </div>
-                          )}
+                                )}
+                              </div>
+                            ) : (
+                              <div className="py-6">
+                                <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3 group-hover:text-primary transition-colors" />
+                                <p className="text-sm text-muted-foreground">Asosiy rasmni yuklang</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Image className="w-4 h-4" /> Gallery (ko'p rasm)
+                          </Label>
+                          <div className="border-2 border-dashed border-border rounded-xl p-4 bg-secondary/20">
+                            <input 
+                              type="file" 
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              id="gallery-upload"
+                              onChange={handleGalleryUpload}
+                              data-testid="input-gallery"
+                            />
+                            <label htmlFor="gallery-upload" className="cursor-pointer block text-center py-4">
+                              <Plus className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                              <p className="text-sm text-muted-foreground">Qo'shimcha rasmlar qo'shing</p>
+                            </label>
+                            {galleryPreviews.length > 0 && (
+                              <div className="grid grid-cols-3 gap-2 mt-4">
+                                {galleryPreviews.map((src, idx) => (
+                                  <div key={idx} className="relative group/item">
+                                    <img src={src} className="w-full h-20 object-cover rounded" alt={`Gallery ${idx}`} />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeGalleryImage(idx)}
+                                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="title">Mahsulot Nomi</Label>
-                          <Input id="title" name="title" placeholder="Avtomatik AI tomonidan to'ldiriladi..." data-testid="input-product-title" />
+                          <Label htmlFor="title">Mahsulot Nomi *</Label>
+                          <Input id="title" name="title" placeholder="Mahsulot nomini kiriting" data-testid="input-product-title" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="price">Narx ($)</Label>
+                          <Label htmlFor="price">Narx ($) *</Label>
                           <Input id="price" name="price" type="number" placeholder="0" data-testid="input-product-price" />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="category">Kategoriya</Label>
-                        <Input id="category" name="category" placeholder="AI tomonidan aniqlanadi..." data-testid="input-product-category" />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="category">Kategoriya *</Label>
+                          <Input id="category" name="category" placeholder="Texnologiya" data-testid="input-product-category" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="brand" className="flex items-center gap-2">
+                            <Tag className="w-4 h-4" /> Brend
+                          </Label>
+                          <Input id="brand" name="brand" placeholder="Apple, Samsung..." data-testid="input-product-brand" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="stock" className="flex items-center gap-2">
+                            <Boxes className="w-4 h-4" /> Omborda (dona)
+                          </Label>
+                          <Input id="stock" name="stock" type="number" placeholder="100" data-testid="input-product-stock" />
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="description">Tavsif</Label>
-                        <Textarea id="description" name="description" placeholder="AI tomonidan yaratilgan tavsif..." className="min-h-[100px]" data-testid="input-product-description" />
+                        <Label htmlFor="shortDescription">Qisqa Tavsif (200-300 belgi)</Label>
+                        <Textarea 
+                          id="shortDescription" 
+                          name="shortDescription" 
+                          placeholder="Mahsulotning qisqa, jozibali tavsifi..." 
+                          className="min-h-[80px]" 
+                          maxLength={300}
+                          data-testid="input-short-description" 
+                        />
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Tavsif *</Label>
+                        <Textarea id="description" name="description" placeholder="Mahsulot haqida asosiy ma'lumot..." className="min-h-[100px]" data-testid="input-product-description" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="fullDescription">To'liq Tavsif (SEO uchun)</Label>
+                        <Textarea 
+                          id="fullDescription" 
+                          name="fullDescription" 
+                          placeholder="Mahsulotning batafsil tavsifi, texnik ma'lumotlar, foydalanish holatlari va boshqalar..." 
+                          className="min-h-[150px]" 
+                          data-testid="input-full-description" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="videoUrl" className="flex items-center gap-2">
+                          <Video className="w-4 h-4" /> YouTube Video URL
+                        </Label>
+                        <Input 
+                          id="videoUrl" 
+                          name="videoUrl" 
+                          placeholder="https://www.youtube.com/watch?v=..." 
+                          data-testid="input-video-url" 
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <Label className="flex items-center gap-2">
+                          <Edit className="w-4 h-4" /> Xususiyatlar (Specifications)
+                        </Label>
+                        <div className="space-y-3">
+                          {specs.map((spec, idx) => (
+                            <div key={idx} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
+                              <span className="font-medium">{spec.label}:</span>
+                              <span className="text-muted-foreground">{spec.value}</span>
+                              <button 
+                                type="button" 
+                                onClick={() => removeSpec(idx)}
+                                className="ml-auto text-destructive hover:text-destructive/80"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                          <div className="flex flex-wrap gap-2">
+                            <Input 
+                              placeholder="Nomi (masalan: Ekran)" 
+                              value={newSpecLabel}
+                              onChange={(e) => setNewSpecLabel(e.target.value)}
+                              className="flex-1 min-w-[150px]"
+                              data-testid="input-spec-label"
+                            />
+                            <Input 
+                              placeholder="Qiymati (masalan: 6.7 inch)" 
+                              value={newSpecValue}
+                              onChange={(e) => setNewSpecValue(e.target.value)}
+                              className="flex-1 min-w-[150px]"
+                              data-testid="input-spec-value"
+                            />
+                            <Button type="button" variant="outline" onClick={addSpec} data-testid="button-add-spec">
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
 
                       <Button type="submit" className="w-full" disabled={!selectedFile || createProductMutation.isPending} data-testid="button-create-product">
                         {createProductMutation.isPending ? (
-                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> AI tahlil qilmoqda...</>
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> AI tahlil qilmoqda va saqlanyapti...</>
                         ) : (
                           <><CheckCircle className="w-4 h-4 mr-2" /> Mahsulotni Chop Etish</>
                         )}
@@ -334,30 +544,44 @@ export default function Admin() {
                     <CardTitle>Barcha Mahsulotlar ({products.length})</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                      {products.map((product: Product) => (
-                        <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border" data-testid={`product-item-${product.id}`}>
-                          <img src={product.imageUrl} className="w-16 h-16 rounded object-cover" alt={product.title} />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{product.title}</div>
-                            <div className="text-xs text-muted-foreground">{product.category} - ${product.price}</div>
-                            {product.isFlashSale && (
-                              <Badge variant="destructive" className="mt-1 text-xs">
-                                <Flame className="w-3 h-3 mr-1" /> Flash Sale: ${product.flashSalePrice}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => postToTelegramMutation.mutate(product.id)} disabled={postToTelegramMutation.isPending} data-testid={`button-telegram-${product.id}`}>
-                              <Send className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => deleteProductMutation.mutate(product.id)} disabled={deleteProductMutation.isPending} data-testid={`button-delete-${product.id}`}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <ScrollArea className="h-[400px]">
+                      <div className="space-y-4 pr-4">
+                        {products.length === 0 ? (
+                          <p className="text-center text-muted-foreground py-8">Hozircha mahsulotlar yo'q</p>
+                        ) : (
+                          products.map((product: Product) => (
+                            <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border" data-testid={`product-item-${product.id}`}>
+                              <img src={product.imageUrl} className="w-16 h-16 rounded object-cover" alt={product.title} />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium truncate">{product.title}</div>
+                                <div className="text-xs text-muted-foreground">{product.category} {product.brand && `- ${product.brand}`}</div>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                  <span className="font-bold">${product.price}</span>
+                                  {product.stock !== null && product.stock !== undefined && (
+                                    <Badge variant="outline" className="text-xs">
+                                      <Boxes className="w-3 h-3 mr-1" /> {product.stock}
+                                    </Badge>
+                                  )}
+                                  {product.isFlashSale && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      <Flame className="w-3 h-3 mr-1" /> ${product.flashSalePrice}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="outline" onClick={() => postToTelegramMutation.mutate(product.id)} disabled={postToTelegramMutation.isPending} data-testid={`button-telegram-${product.id}`}>
+                                  <Send className="w-4 h-4" />
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => deleteProductMutation.mutate(product.id)} disabled={deleteProductMutation.isPending} data-testid={`button-delete-${product.id}`}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
                   </CardContent>
                 </Card>
               </div>
@@ -384,11 +608,22 @@ export default function Admin() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Tez Yordam</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground space-y-2">
+                    <p>* Asosiy rasm majburiy</p>
+                    <p>* Gallery - mahsulot slayderi uchun qo'shimcha rasmlar</p>
+                    <p>* Video URL - YouTube link</p>
+                    <p>* Xususiyatlar - texnik ma'lumotlar uchun</p>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </TabsContent>
 
-          {/* Orders Tab */}
           <TabsContent value="orders">
             <Card>
               <CardHeader>
@@ -432,7 +667,6 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
-          {/* Telegram Tab */}
           <TabsContent value="telegram">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
@@ -478,27 +712,28 @@ export default function Admin() {
                   <CardDescription>So'nggi yuborilgan postlar</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                    {telegramLogs.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">Hozircha loglar yo'q</p>
-                    ) : (
-                      telegramLogs.map((log: any) => (
-                        <div key={log.id} className="p-3 rounded-lg bg-secondary/50 border border-border">
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge variant={log.status === "sent" ? "default" : "destructive"}>{log.status}</Badge>
-                            <span className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString("uz-UZ")}</span>
+                  <ScrollArea className="h-[400px]">
+                    <div className="space-y-3 pr-4">
+                      {telegramLogs.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">Hozircha loglar yo'q</p>
+                      ) : (
+                        telegramLogs.map((log: any) => (
+                          <div key={log.id} className="p-3 rounded-lg bg-secondary/50 border border-border">
+                            <div className="flex items-center justify-between mb-2">
+                              <Badge variant={log.status === "sent" ? "default" : "destructive"}>{log.status}</Badge>
+                              <span className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString("uz-UZ")}</span>
+                            </div>
+                            <p className="text-sm line-clamp-2">{log.caption}</p>
                           </div>
-                          <p className="text-sm line-clamp-2">{log.caption}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* Flash Sale Tab */}
           <TabsContent value="flash-sale">
             <Card>
               <CardHeader>
@@ -508,62 +743,83 @@ export default function Admin() {
                 <CardDescription>24 soatlik chegirmalarni boshqaring</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {products.map((product: Product) => (
-                    <div key={product.id} className="flex flex-wrap items-center gap-4 p-4 rounded-lg bg-secondary/50 border border-border" data-testid={`flash-sale-item-${product.id}`}>
-                      <img src={product.imageUrl} className="w-16 h-16 rounded object-cover" alt={product.title} />
-                      <div className="flex-1 min-w-[200px]">
-                        <div className="font-medium">{product.title}</div>
-                        <div className="text-sm text-muted-foreground">Asl narx: ${product.price}</div>
-                      </div>
-                      
-                      {product.isFlashSale ? (
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <Badge variant="destructive" className="mb-1">
-                              <Flame className="w-3 h-3 mr-1" /> ${product.flashSalePrice}
-                            </Badge>
-                            <div className="text-xs text-muted-foreground">
-                              {product.flashSaleEnds && new Date(product.flashSaleEnds).toLocaleString("uz-UZ")}
-                            </div>
+                <ScrollArea className="h-[500px]">
+                  <div className="space-y-4 pr-4">
+                    {products.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">Hozircha mahsulotlar yo'q</p>
+                    ) : (
+                      products.map((product: Product) => (
+                        <div key={product.id} className="flex flex-wrap items-center gap-4 p-4 rounded-lg bg-secondary/50 border border-border" data-testid={`flash-sale-item-${product.id}`}>
+                          <img src={product.imageUrl} className="w-16 h-16 rounded object-cover" alt={product.title} />
+                          <div className="flex-1 min-w-[200px]">
+                            <div className="font-medium">{product.title}</div>
+                            <div className="text-sm text-muted-foreground">Asl narx: ${product.price}</div>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => clearFlashSaleMutation.mutate(product.id)} data-testid={`button-clear-flash-${product.id}`}>
-                            Bekor qilish
-                          </Button>
-                        </div>
-                      ) : (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setFlashSaleProductId(product.id)} data-testid={`button-set-flash-${product.id}`}>
-                              <Flame className="w-4 h-4 mr-2" /> Flash Sale
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Flash Sale O'rnatish</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="flex items-center gap-4">
-                                <img src={product.imageUrl} className="w-20 h-20 rounded object-cover" alt={product.title} />
-                                <div>
-                                  <p className="font-medium">{product.title}</p>
-                                  <p className="text-sm text-muted-foreground">Asl narx: ${product.price}</p>
+                          
+                          {product.isFlashSale ? (
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <Badge variant="destructive" className="mb-1">
+                                  <Flame className="w-3 h-3 mr-1" /> ${product.flashSalePrice}
+                                </Badge>
+                                <div className="text-xs text-muted-foreground">
+                                  {product.flashSaleEnds && new Date(product.flashSaleEnds).toLocaleString("uz-UZ")}
                                 </div>
                               </div>
-                              <div className="space-y-2">
-                                <Label>Chegirma Narxi ($)</Label>
-                                <Input type="number" placeholder="Yangi narx" value={flashSalePrice} onChange={(e) => setFlashSalePrice(e.target.value)} data-testid="input-flash-sale-price" />
-                              </div>
-                              <Button className="w-full" onClick={() => { if (flashSalePrice) { setFlashSaleMutation.mutate({ id: product.id, price: parseInt(flashSalePrice) }); } }} disabled={!flashSalePrice || setFlashSaleMutation.isPending} data-testid="button-confirm-flash-sale">
-                                <Flame className="w-4 h-4 mr-2" /> Flash Sale Boshlash (24 soat)
+                              <Button variant="outline" size="sm" onClick={() => clearFlashSaleMutation.mutate(product.id)} data-testid={`button-clear-flash-${product.id}`}>
+                                Bekor qilish
                               </Button>
                             </div>
-                          </DialogContent>
-                        </Dialog>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                          ) : (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setFlashSaleProductId(product.id)} data-testid={`button-set-flash-${product.id}`}>
+                                  <Flame className="w-4 h-4 mr-2" /> Flash Sale
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Flash Sale O'rnatish</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <div className="flex items-center gap-4">
+                                    <img src={product.imageUrl} className="w-20 h-20 rounded object-cover" alt={product.title} />
+                                    <div>
+                                      <p className="font-medium">{product.title}</p>
+                                      <p className="text-sm text-muted-foreground">Asl narx: ${product.price}</p>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Chegirma Narxi ($)</Label>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="Yangi narx" 
+                                      value={flashSalePrice} 
+                                      onChange={(e) => setFlashSalePrice(e.target.value)} 
+                                      data-testid="input-flash-sale-price" 
+                                    />
+                                  </div>
+                                  <Button 
+                                    className="w-full" 
+                                    onClick={() => { 
+                                      if (flashSalePrice) { 
+                                        setFlashSaleMutation.mutate({ id: product.id, price: parseInt(flashSalePrice) }); 
+                                      } 
+                                    }} 
+                                    disabled={!flashSalePrice || setFlashSaleMutation.isPending} 
+                                    data-testid="button-confirm-flash-sale"
+                                  >
+                                    <Flame className="w-4 h-4 mr-2" /> Flash Sale Boshlash (24 soat)
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
               </CardContent>
             </Card>
           </TabsContent>

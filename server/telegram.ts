@@ -102,22 +102,35 @@ function formatTelegramCaption(
   marketing: { headline: string; salesText: string; cta: string; offers: string[]; hashtags: string[] }
 ): string {
   const flashSaleText = product.isFlashSale && product.flashSalePrice
-    ? `\n<s>$${product.price}</s> <b>$${product.flashSalePrice}</b> CHEGIRMA!`
-    : `<b>$${product.price}</b>`;
+    ? `\n💥 <s>$${product.price}</s> <b>$${product.flashSalePrice}</b> CHEGIRMA!`
+    : `💰 <b>$${product.price}</b>`;
+
+  const brandText = product.brand ? `\n🏷 Brend: ${product.brand}` : "";
+  const shortDesc = product.shortDescription ? `\n\n${product.shortDescription}` : "";
+  const stockText = product.stock !== null && product.stock !== undefined && product.stock > 0 
+    ? `\n📦 Omborda: ${product.stock} dona` 
+    : product.stock === 0 
+    ? "\n⚠️ Tugagan" 
+    : "";
+  
+  const videoText = product.videoUrl ? `\n\n🎬 <a href="${product.videoUrl}">Videoni Ko'rish</a>` : "";
 
   return `${marketing.headline}
+${brandText}
+${shortDesc}
 
 ${marketing.salesText}
 
-${flashSaleText}
+${flashSaleText}${stockText}
 
-${marketing.offers.map(o => `✓ ${o}`).join("\n")}
+${marketing.offers.map(o => `✅ ${o}`).join("\n")}
 
-${marketing.cta}
+${marketing.cta}${videoText}
 
 ${marketing.hashtags.join(" ")}
 
-🛒 Buyurtma: @LuminaShop_bot`;
+🛒 Buyurtma: @LuminaShop_bot
+🌐 Website: lumina.shop`;
 }
 
 function getFullImageUrl(imageUrl: string): string {
