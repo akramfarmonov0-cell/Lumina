@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { assets } from "@/lib/mock-data";
-import { ShoppingCart, Search, User, Menu, ShieldCheck } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, ShieldCheck, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,16 +9,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-background">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-background transition-colors duration-300">
       {/* Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/">
@@ -38,16 +45,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/">
               <a className={`text-sm font-medium hover:text-primary transition-colors ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Store
+                Do'kon
               </a>
             </Link>
             <Link href="/admin">
               <a className={`text-sm font-medium hover:text-primary transition-colors ${location === '/admin' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Admin
+                Admin Panel
               </a>
             </Link>
             <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              About AI
+              AI Haqida
             </a>
           </nav>
 
@@ -57,10 +64,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <input 
                 type="text" 
-                placeholder="Neural Search..." 
-                className="h-9 w-64 rounded-full bg-secondary/50 border border-white/5 pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                placeholder="Neyron Qidiruv..." 
+                className="h-9 w-64 rounded-full bg-secondary/50 border border-border pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
+
+            {mounted && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="hover:text-primary"
+              >
+                {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+            )}
             
             <Button variant="ghost" size="icon" className="hover:text-primary">
               <ShoppingCart className="h-5 w-5" />
@@ -72,9 +90,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card border-white/10">
-                <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Profile</DropdownMenuItem>
-                <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Orders</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="bg-card border-border">
+                <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Profil</DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Buyurtmalar</DropdownMenuItem>
                 <Link href="/admin">
                   <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Admin Panel</DropdownMenuItem>
                 </Link>
@@ -88,13 +106,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-card border-l border-white/10">
+              <SheetContent side="right" className="bg-card border-l border-border">
                 <nav className="flex flex-col gap-4 mt-8">
                   <Link href="/">
-                    <a className="text-lg font-medium" onClick={() => setIsMobileMenuOpen(false)}>Store</a>
+                    <a className="text-lg font-medium" onClick={() => setIsMobileMenuOpen(false)}>Do'kon</a>
                   </Link>
                   <Link href="/admin">
-                    <a className="text-lg font-medium" onClick={() => setIsMobileMenuOpen(false)}>Admin</a>
+                    <a className="text-lg font-medium" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</a>
                   </Link>
                 </nav>
               </SheetContent>
@@ -109,37 +127,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-12 mt-20 bg-black/20">
+      <footer className="border-t border-border py-12 mt-20 bg-secondary/20">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
              <span className="font-display font-bold text-xl tracking-wide">
                 Lumina<span className="text-primary">.AI</span>
               </span>
               <p className="mt-4 text-sm text-muted-foreground">
-                Next-generation e-commerce powered by advanced neural networks.
+                Ilg'or neyron tarmoqlar asosida ishlaydigan keyingi avlod elektron tijorati.
               </p>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Platform</h4>
+            <h4 className="font-bold mb-4">Platforma</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Neural Search</li>
-              <li>AI Analytics</li>
-              <li>Predictive Stock</li>
+              <li>Neyron Qidiruv</li>
+              <li>AI Analitika</li>
+              <li>Bashoratli Zaxira</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Company</h4>
+            <h4 className="font-bold mb-4">Kompaniya</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>About Us</li>
-              <li>Careers</li>
-              <li>Legal</li>
+              <li>Biz Haqimizda</li>
+              <li>Karyera</li>
+              <li>Huquqiy</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Secure</h4>
+            <h4 className="font-bold mb-4">Xavfsizlik</h4>
             <div className="flex items-center gap-2 text-primary/80">
               <ShieldCheck className="h-5 w-5" />
-              <span className="text-sm">Verified by Sentinel AI</span>
+              <span className="text-sm">Sentinel AI tomonidan tasdiqlangan</span>
             </div>
           </div>
         </div>
