@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProductSchema, insertOrderSchema, insertOrderItemSchema, insertUserSchema } from "@shared/schema";
@@ -243,7 +244,6 @@ export async function registerRoutes(
   });
 
   // Serve uploaded files
-  const express = require("express");
   app.use("/uploads", (req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     next();
