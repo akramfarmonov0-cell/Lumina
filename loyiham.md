@@ -9,7 +9,21 @@ Bu platforma foydalanuvchilarga mahsulotlarni ko'rish, savatchani boshqarish va 
 
 ---
 
-## Yangi Xususiyatlar (2024 Dekabr)
+## Loyiha Holati (Dekabr 2025)
+
+**Holat:** Ishga tayyor
+
+### Oxirgi Yangilanishlar
+- Replit Agent muhitidan Replit muhitiga muvaffaqiyatli migratsiya qilindi
+- Node.js 20 muhiti sozlandi
+- Barcha paketlar o'rnatildi va ishga tushirildi
+- PostgreSQL ma'lumotlar bazasi Drizzle ORM orqali ulandi
+- Deployment konfiguratsiyasi sozlandi (autoscale rejimi)
+- Workflow `npm run dev` bilan ishga tushirildi va muvaffaqiyatli ishlayapti
+
+---
+
+## Yangi Xususiyatlar (2024-2025)
 
 ### AI Marketing Kengaytmalari
 - SEO optimallashtirilgan sarlavhalar generatsiyasi
@@ -50,7 +64,7 @@ Bu platforma foydalanuvchilarga mahsulotlarni ko'rish, savatchani boshqarish va 
 | **Radix UI + shadcn/ui** | UI komponentlar kutubxonasi |
 | **Tailwind CSS** | Stillar va dizayn |
 | **Framer Motion** | Animatsiyalar |
-| **Vite** | Tezkor dastur yig'ish vositasi |
+| **Vite 7** | Tezkor dastur yig'ish vositasi |
 
 ### Backend (Server tomoni)
 
@@ -89,16 +103,11 @@ Bu platforma foydalanuvchilarga mahsulotlarni ko'rish, savatchani boshqarish va 
 | imageUrl | Text | Rasm manzili |
 | category | Text | Kategoriyasi |
 | tags | JSON | Teglar ro'yxati |
-| aiAnalysis | JSON | AI tahlili natijalari |
-| seoTitle | Text | SEO optimallashtirilgan sarlavha |
-| sellingPoints | JSON | Sotish nuqtalari |
-| useCases | JSON | Foydalanish ssenariyalari |
-| priceJustification | Text | Narx asoslash |
-| marketingCopy | Text | Marketing matni |
+| aiAnalysis | JSON | AI tahlili natijalari (sentiment, keywords, prediction, sellingPoints, useCases, priceJustification, seoTitle, seoDescription) |
 | isFlashSale | Boolean | Flash sale holati |
 | flashSalePrice | Integer | Chegirma narxi |
 | flashSaleEnds | Timestamp | Chegirma tugash vaqti |
-| lastPostedToTelegram | Timestamp | Oxirgi Telegram post vaqti |
+| telegramPostedAt | Timestamp | Oxirgi Telegram post vaqti |
 | createdAt | Timestamp | Yaratilgan vaqt |
 
 #### 3. `orders` - Buyurtmalar
@@ -126,9 +135,11 @@ Bu platforma foydalanuvchilarga mahsulotlarni ko'rish, savatchani boshqarish va 
 |--------|------|--------|
 | id | Serial | Unikal raqam |
 | productId | Integer | Mahsulot ID |
+| messageId | Text | Telegram xabar ID |
 | caption | Text | Post matni |
+| marketingVariantA | Text | Marketing variant A |
+| marketingVariantB | Text | Marketing variant B |
 | status | Text | Holati (sent/failed) |
-| error | Text | Xato xabari |
 | createdAt | Timestamp | Yuborilgan vaqt |
 
 ---
@@ -346,12 +357,21 @@ npm run db:push
 
 ---
 
+## Deployment Konfiguratsiyasi
+
+**Rejim:** Autoscale  
+**Build buyrug'i:** `npm run build`  
+**Ishga tushirish:** `npm run start`  
+**Port:** 5000
+
+---
+
 ## Xulosa
 
 Lumina AI - bu zamonaviy, AI-powered elektron tijorat platformasi bo'lib, O'zbekiston bozori uchun to'liq moslashtirilgan. Platforma Google Gemini AI dan foydalanib, mahsulot rasmlarini avtomatik tahlil qiladi, professional marketing kontentini yaratadi va Telegram kanalga avtomatik post yuboradi.
 
 **Asosiy afzalliklar:**
-- Zamonaviy texnologiyalar (React 19, TypeScript, Tailwind CSS)
+- Zamonaviy texnologiyalar (React 19, TypeScript, Tailwind CSS, Vite 7)
 - Kengaytirilgan AI-powered mahsulot tahlili
 - Professional marketing copy generatsiyasi
 - Telegram bot integratsiyasi
@@ -363,5 +383,6 @@ Lumina AI - bu zamonaviy, AI-powered elektron tijorat platformasi bo'lib, O'zbek
 
 ---
 
-*Hisobot yangilangan: Dekabr 2024*  
-*Platforma: Replit*
+*Hisobot yangilangan: 3 Dekabr 2025*  
+*Platforma: Replit*  
+*Holat: Ishga tayyor*
