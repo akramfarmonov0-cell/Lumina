@@ -29,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/">
-            <a className="flex items-center gap-3 group">
+            <div className="flex items-center gap-3 group cursor-pointer">
               <img 
                 src={assets.logo} 
                 alt="Lumina AI" 
@@ -38,24 +38,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="font-display font-bold text-xl tracking-wide">
                 Lumina<span className="text-primary">.AI</span>
               </span>
-            </a>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/">
-              <a className={`text-sm font-medium hover:text-primary transition-colors ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span className={`text-sm font-medium hover:text-primary transition-colors cursor-pointer ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`}>
                 Do'kon
-              </a>
+              </span>
             </Link>
             <Link href="/admin">
-              <a className={`text-sm font-medium hover:text-primary transition-colors ${location === '/admin' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span className={`text-sm font-medium hover:text-primary transition-colors cursor-pointer ${location === '/admin' ? 'text-primary' : 'text-muted-foreground'}`}>
                 Admin Panel
-              </a>
+              </span>
             </Link>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <span className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">
               AI Haqida
-            </a>
+            </span>
           </nav>
 
           {/* Actions */}
@@ -93,9 +93,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <DropdownMenuContent align="end" className="bg-card border-border">
                 <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Profil</DropdownMenuItem>
                 <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Buyurtmalar</DropdownMenuItem>
-                <Link href="/admin">
-                  <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary">Admin Panel</DropdownMenuItem>
-                </Link>
+                <DropdownMenuItem className="focus:bg-primary/10 focus:text-primary" onClick={() => window.location.href = '/admin'}>
+                  Admin Panel
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -108,11 +108,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </SheetTrigger>
               <SheetContent side="right" className="bg-card border-l border-border">
                 <nav className="flex flex-col gap-4 mt-8">
-                  <Link href="/">
-                    <a className="text-lg font-medium" onClick={() => setIsMobileMenuOpen(false)}>Do'kon</a>
+                  <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+                    <span className="text-lg font-medium cursor-pointer">Do'kon</span>
                   </Link>
-                  <Link href="/admin">
-                    <a className="text-lg font-medium" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</a>
+                  <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                    <span className="text-lg font-medium cursor-pointer">Admin Panel</span>
                   </Link>
                 </nav>
               </SheetContent>
