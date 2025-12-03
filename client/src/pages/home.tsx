@@ -2,16 +2,44 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, ArrowRight, BrainCircuit, ShoppingCart, ShieldCheck } from "lucide-react";
+import { Sparkles, Zap, ArrowRight, BrainCircuit, ShoppingCart, ShieldCheck, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: getProducts,
   });
+  const { addToCart, items } = useCart();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [addedItems, setAddedItems] = useState<Set<number>>(new Set());
+
+  const handleAddToCart = (product: any) => {
+    addToCart(product);
+    setAddedItems((prev) => new Set(prev).add(product.id));
+    toast({
+      title: "Savatga qo'shildi!",
+      description: `${product.title} savatga qo'shildi`,
+    });
+    setTimeout(() => {
+      setAddedItems((prev) => {
+        const next = new Set(prev);
+        next.delete(product.id);
+        return next;
+      });
+    }, 2000);
+  };
+
+  const isInCart = (productId: number) => {
+    return items.some((item) => item.product.id === productId);
+  };
 
   return (
     <Layout>
@@ -40,7 +68,12 @@ export default function Home() {
                 Savdo evolyutsiyasini his qiling. Bizning AI trendlarni tahlil qiladi, sifatni bashorat qiladi va sizning turmush tarzingiz uchun mukammal texnikani tanlaydi.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="bg-primary text-background hover:bg-primary/90 font-bold px-8 h-12 rounded-full shadow-[0_0_20px_-5px_var(--color-primary)]">
+                <Button 
+                  size="lg" 
+                  className="bg-primary text-background hover:bg-primary/90 font-bold px-8 h-12 rounded-full shadow-[0_0_20px_-5px_var(--color-primary)]"
+                  onClick={() => setLocation("/checkout")}
+                  data-testid="button-start-shopping"
+                >
                   Xaridni Boshlash <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 rounded-full border-primary/20 hover:bg-primary/5">
@@ -167,8 +200,23 @@ export default function Home() {
 
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                       <span className="text-xl font-bold font-mono">${product.price}</span>
-                      <Button size="sm" className="rounded-full bg-secondary hover:bg-primary hover:text-background transition-colors">
-                        <ShoppingCart className="w-4 h-4" />
+                      <Button 
+                        size="sm" 
+                        className={`rounded-full transition-colors ${
+                          addedItems.has(product.id) 
+                            ? "bg-green-500 text-white" 
+                            : isInCart(product.id)
+                            ? "bg-primary/20 text-primary"
+                            : "bg-secondary hover:bg-primary hover:text-background"
+                        }`}
+                        onClick={() => handleAddToCart(product)}
+                        data-testid={`button-add-to-cart-${product.id}`}
+                      >
+                        {addedItems.has(product.id) ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </div>

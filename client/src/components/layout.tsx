@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { assets } from "@/lib/mock-data";
 import { ShoppingCart, Search, User, Menu, ShieldCheck, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,12 +12,14 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useCart } from "@/hooks/use-cart";
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     setMounted(true);
@@ -80,8 +83,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Button>
             )}
             
-            <Button variant="ghost" size="icon" className="hover:text-primary">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hover:text-primary relative"
+              onClick={() => setLocation("/checkout")}
+              data-testid="button-cart"
+            >
               <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <Badge 
+                  className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-background"
+                  data-testid="badge-cart-count"
+                >
+                  {totalItems}
+                </Badge>
+              )}
             </Button>
 
             <DropdownMenu>
