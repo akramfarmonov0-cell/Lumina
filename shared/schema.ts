@@ -34,9 +34,38 @@ export const products = pgTable("products", {
     sentiment: string;
     keywords: string[];
     prediction: string;
+    sellingPoints: string[];
+    useCases: string[];
+    priceJustification: string;
+    seoTitle: string;
+    seoDescription: string;
   }>(),
+  isFlashSale: boolean("is_flash_sale").default(false).notNull(),
+  flashSalePrice: integer("flash_sale_price"),
+  flashSaleEnds: timestamp("flash_sale_ends"),
+  telegramPostedAt: timestamp("telegram_posted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Telegram Post Log Table
+export const telegramLogs = pgTable("telegram_logs", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id),
+  messageId: text("message_id"),
+  caption: text("caption").notNull(),
+  marketingVariantA: text("marketing_variant_a"),
+  marketingVariantB: text("marketing_variant_b"),
+  status: text("status").notNull().default("sent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTelegramLogSchema = createInsertSchema(telegramLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTelegramLog = z.infer<typeof insertTelegramLogSchema>;
+export type TelegramLog = typeof telegramLogs.$inferSelect;
 
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,

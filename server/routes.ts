@@ -3,7 +3,8 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProductSchema, insertOrderSchema, insertOrderItemSchema, insertUserSchema } from "@shared/schema";
-import { analyzeProductImage } from "./gemini";
+import { analyzeProductImage, generateMarketingContent, generateFlashSaleContent } from "./gemini";
+import { postProductToTelegram, runHourlyCronJob, startCronJob, stopCronJob, isCronRunning } from "./telegram";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -240,6 +241,156 @@ export async function registerRoutes(
       res.json(order);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Search products
+  app.get("/api/products/search", async (req, res) => {
+    try {
+      const query = req.query.q as string || "";
+      const products = await storage.searchProducts(query);
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Flash Sale endpoints
+  app.get("/api/flash-sales", async (req, res) => {
+    try {
+      const products = await storage.getFlashSaleProducts();
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/products/:id/flash-sale", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { flashSalePrice, hours = 24 } = req.body;
+      
+      if (!flashSalePrice || flashSalePrice <= 0) {
+        return res.status(400).json({ error: "Chegirma narxini kiriting" });
+      }
+
+      const endsAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+      const product = await storage.setFlashSale(id, flashSalePrice, endsAt);
+      
+      if (!product) {
+        return res.status(404).json({ error: "Mahsulot topilmadi" });
+      }
+
+      // Generate flash sale marketing content
+      const flashContent = await generateFlashSaleContent({
+        title: product.title,
+        price: product.price,
+        flashSalePrice: flashSalePrice,
+      });
+
+      res.json({ product, marketing: flashContent });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/products/:id/flash-sale", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.clearFlashSale(id);
+      
+      if (!product) {
+        return res.status(404).json({ error: "Mahsulot topilmadi" });
+      }
+      
+      res.json(product);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Telegram endpoints
+  app.get("/api/telegram/logs", async (req, res) => {
+    try {
+      const logs = await storage.getTelegramLogs();
+      res.json(logs);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/telegram/post/:productId", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      const product = await storage.getProduct(productId);
+      
+      if (!product) {
+        return res.status(404).json({ error: "Mahsulot topilmadi" });
+      }
+
+      const success = await postProductToTelegram(product);
+      
+      if (success) {
+        res.json({ success: true, message: "Telegram kanalga yuborildi" });
+      } else {
+        res.status(500).json({ error: "Telegram yuborishda xatolik" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/telegram/cron/start", async (req, res) => {
+    try {
+      startCronJob();
+      res.json({ success: true, message: "Cron job boshlandi", running: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/telegram/cron/stop", async (req, res) => {
+    try {
+      stopCronJob();
+      res.json({ success: true, message: "Cron job to'xtatildi", running: false });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/telegram/cron/status", async (req, res) => {
+    res.json({ running: isCronRunning() });
+  });
+
+  app.post("/api/telegram/cron/run-now", async (req, res) => {
+    try {
+      await runHourlyCronJob();
+      res.json({ success: true, message: "Cron job qo'lda ishga tushirildi" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Marketing content generation
+  app.post("/api/products/:id/marketing", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.getProduct(id);
+      
+      if (!product) {
+        return res.status(404).json({ error: "Mahsulot topilmadi" });
+      }
+
+      const marketing = await generateMarketingContent({
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+      });
+
+      res.json(marketing);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 

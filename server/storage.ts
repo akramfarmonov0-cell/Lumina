@@ -3,6 +3,7 @@ import {
   products, 
   orders, 
   orderItems,
+  telegramLogs,
   type User, 
   type InsertUser,
   type Product,
@@ -10,12 +11,13 @@ import {
   type Order,
   type InsertOrder,
   type OrderItem,
-  type InsertOrderItem
+  type InsertOrderItem,
+  type TelegramLog,
+  type InsertTelegramLog
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, isNull, sql } from "drizzle-orm";
 
-// Blueprint: javascript_database
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
@@ -25,9 +27,15 @@ export interface IStorage {
   // Product methods
   getAllProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
+  getLatestProduct(): Promise<Product | undefined>;
+  getRandomUnpostedProduct(): Promise<Product | undefined>;
+  getFlashSaleProducts(): Promise<Product[]>;
+  searchProducts(query: string): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<boolean>;
+  setFlashSale(id: number, flashSalePrice: number, endsAt: Date): Promise<Product | undefined>;
+  clearFlashSale(id: number): Promise<Product | undefined>;
   
   // Order methods
   getAllOrders(): Promise<Order[]>;
@@ -38,6 +46,10 @@ export interface IStorage {
   // OrderItem methods
   createOrderItem(item: InsertOrderItem): Promise<OrderItem>;
   getOrderItems(orderId: number): Promise<OrderItem[]>;
+  
+  // Telegram methods
+  createTelegramLog(log: InsertTelegramLog): Promise<TelegramLog>;
+  getTelegramLogs(): Promise<TelegramLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -73,10 +85,7 @@ export class DatabaseStorage implements IStorage {
   async createProduct(product: InsertProduct): Promise<Product> {
     const [newProduct] = await db
       .insert(products)
-      .values({
-        ...product,
-        tags: product.tags || [],
-      })
+      .values(product)
       .returning();
     return newProduct;
   }
@@ -137,6 +146,87 @@ export class DatabaseStorage implements IStorage {
 
   async getOrderItems(orderId: number): Promise<OrderItem[]> {
     return await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+  }
+
+  // New Product methods
+  async getLatestProduct(): Promise<Product | undefined> {
+    const [product] = await db
+      .select()
+      .from(products)
+      .orderBy(desc(products.createdAt))
+      .limit(1);
+    return product || undefined;
+  }
+
+  async getRandomUnpostedProduct(): Promise<Product | undefined> {
+    const [product] = await db
+      .select()
+      .from(products)
+      .where(isNull(products.telegramPostedAt))
+      .orderBy(sql`RANDOM()`)
+      .limit(1);
+    return product || undefined;
+  }
+
+  async getFlashSaleProducts(): Promise<Product[]> {
+    return await db
+      .select()
+      .from(products)
+      .where(eq(products.isFlashSale, true))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async searchProducts(query: string): Promise<Product[]> {
+    const lowercaseQuery = query.toLowerCase();
+    const allProducts = await db.select().from(products).orderBy(desc(products.createdAt));
+    return allProducts.filter(p => 
+      p.title.toLowerCase().includes(lowercaseQuery) ||
+      p.description.toLowerCase().includes(lowercaseQuery) ||
+      p.category.toLowerCase().includes(lowercaseQuery)
+    );
+  }
+
+  async setFlashSale(id: number, flashSalePrice: number, endsAt: Date): Promise<Product | undefined> {
+    const [updated] = await db
+      .update(products)
+      .set({ 
+        isFlashSale: true,
+        flashSalePrice: flashSalePrice,
+        flashSaleEnds: endsAt
+      })
+      .where(eq(products.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async clearFlashSale(id: number): Promise<Product | undefined> {
+    const [updated] = await db
+      .update(products)
+      .set({ 
+        isFlashSale: false,
+        flashSalePrice: null,
+        flashSaleEnds: null
+      })
+      .where(eq(products.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  // Telegram methods
+  async createTelegramLog(log: InsertTelegramLog): Promise<TelegramLog> {
+    const [newLog] = await db
+      .insert(telegramLogs)
+      .values(log)
+      .returning();
+    return newLog;
+  }
+
+  async getTelegramLogs(): Promise<TelegramLog[]> {
+    return await db
+      .select()
+      .from(telegramLogs)
+      .orderBy(desc(telegramLogs.createdAt))
+      .limit(50);
   }
 }
 
