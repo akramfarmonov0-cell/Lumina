@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { ShoppingBag, Minus, Plus, Trash2, Loader2, CheckCircle, ArrowLeft, Truck, Phone, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatPrice } from "@/lib/utils";
 
 export default function Checkout() {
   const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
@@ -152,7 +153,7 @@ export default function Checkout() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{item.product.title}</h3>
                         <p className="text-sm text-muted-foreground">{item.product.category}</p>
-                        <p className="font-bold text-primary">${item.product.price}</p>
+                        <p className="font-bold text-primary">{formatPrice(item.product.price)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
@@ -246,7 +247,7 @@ export default function Checkout() {
                       </div>
                       <div className="flex justify-between text-lg font-bold">
                         <span>Jami:</span>
-                        <span className="text-primary" data-testid="text-total-price">${totalPrice}</span>
+                        <span className="text-primary" data-testid="text-total-price">{formatPrice(totalPrice)}</span>
                       </div>
                     </div>
 

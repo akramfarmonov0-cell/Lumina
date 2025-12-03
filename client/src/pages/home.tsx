@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import type { Product } from "@shared/schema";
+import { formatPrice } from "@/lib/utils";
 
 function CountdownTimer({ endsAt }: { endsAt: Date }) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -181,8 +182,8 @@ export default function Home() {
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2 truncate">{product.title}</h3>
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl font-bold text-red-500">${product.flashSalePrice}</span>
-                      <span className="text-sm text-muted-foreground line-through">${product.price}</span>
+                      <span className="text-2xl font-bold text-red-500">{formatPrice(product.flashSalePrice || 0)}</span>
+                      <span className="text-sm text-muted-foreground line-through">{formatPrice(product.price)}</span>
                     </div>
                     <Button 
                       className="w-full bg-red-500 hover:bg-red-600 text-white"
@@ -359,9 +360,9 @@ export default function Home() {
 
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold font-mono">${getDisplayPrice(product)}</span>
+                        <span className="text-xl font-bold font-mono">{formatPrice(getDisplayPrice(product))}</span>
                         {product.isFlashSale && product.flashSalePrice && (
-                          <span className="text-sm text-muted-foreground line-through">${product.price}</span>
+                          <span className="text-sm text-muted-foreground line-through">{formatPrice(product.price)}</span>
                         )}
                       </div>
                       <Button 

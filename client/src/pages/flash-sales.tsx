@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Product } from "@shared/schema";
+import { formatPrice } from "@/lib/utils";
 
 function AnimatedCountdown({ endsAt }: { endsAt: Date }) {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -139,10 +140,10 @@ function FlashSaleCard({ product, onAddToCart, isAdded }: {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-3xl font-bold text-red-500">${product.flashSalePrice}</span>
-            <span className="text-lg text-muted-foreground line-through">${product.price}</span>
+            <span className="text-3xl font-bold text-red-500">{formatPrice(product.flashSalePrice || 0)}</span>
+            <span className="text-lg text-muted-foreground line-through">{formatPrice(product.price)}</span>
             <Badge variant="outline" className="border-green-500 text-green-500">
-              ${product.price - (product.flashSalePrice || 0)} tejaysiz
+              {formatPrice(product.price - (product.flashSalePrice || 0))} tejaysiz
             </Badge>
           </div>
 

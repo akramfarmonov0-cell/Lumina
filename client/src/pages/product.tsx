@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product } from "@shared/schema";
+import { formatPrice } from "@/lib/utils";
 
 function CountdownTimer({ endsAt }: { endsAt: Date }) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -255,9 +256,9 @@ function RelatedProducts({ productId }: { productId: number }) {
                 {product.title}
               </h4>
               <div className="flex items-center gap-2 mt-1">
-                <span className="font-bold">${product.isFlashSale && product.flashSalePrice ? product.flashSalePrice : product.price}</span>
+                <span className="font-bold">{formatPrice(product.isFlashSale && product.flashSalePrice ? product.flashSalePrice : product.price)}</span>
                 {product.isFlashSale && product.flashSalePrice && (
-                  <span className="text-xs text-muted-foreground line-through">${product.price}</span>
+                  <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
                 )}
               </div>
             </div>
@@ -389,10 +390,10 @@ export default function ProductPage() {
             )}
 
             <div className="flex items-baseline gap-4">
-              <span className="text-4xl font-bold" data-testid="text-product-price">${displayPrice}</span>
+              <span className="text-4xl font-bold" data-testid="text-product-price">{formatPrice(displayPrice)}</span>
               {product.isFlashSale && product.flashSalePrice && (
                 <>
-                  <span className="text-xl text-muted-foreground line-through">${product.price}</span>
+                  <span className="text-xl text-muted-foreground line-through">{formatPrice(product.price)}</span>
                   <Badge className="bg-red-500 text-white">
                     -{Math.round(((product.price - product.flashSalePrice) / product.price) * 100)}%
                   </Badge>

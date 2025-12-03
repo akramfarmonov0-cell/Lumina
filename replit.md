@@ -231,3 +231,9 @@ Production build process optimized for Replit deployment:
 - brand: Product brand name
 - specs: Technical specifications (JSON)
 - flashSaleMarketingText: AI-generated flash sale text
+
+### Price Formatting (Uzbek Som)
+- All prices are displayed in Uzbek Som format (e.g., "15 990 000 so'm")
+- formatPrice utility function in `client/src/lib/utils.ts` handles formatting
+- Used across all pages: home, product details, flash sales, checkout, admin panel
+- Prices in database are stored as integers representing Som values

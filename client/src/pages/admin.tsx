@@ -51,6 +51,7 @@ import {
   clearFlashSale
 } from "@/lib/api";
 import type { Product, Order } from "@shared/schema";
+import { formatPrice } from "@/lib/utils";
 
 interface ProductSpec {
   label: string;
@@ -307,7 +308,7 @@ export default function Admin() {
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Daromad</p>
-                  <p className="text-2xl font-bold">${totalRevenue}</p>
+                  <p className="text-2xl font-bold">{formatPrice(totalRevenue)}</p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-green-500/50" />
               </div>
@@ -556,7 +557,7 @@ export default function Admin() {
                                 <div className="text-sm font-medium truncate">{product.title}</div>
                                 <div className="text-xs text-muted-foreground">{product.category} {product.brand && `- ${product.brand}`}</div>
                                 <div className="flex flex-wrap items-center gap-2 mt-1">
-                                  <span className="font-bold">${product.price}</span>
+                                  <span className="font-bold">{formatPrice(product.price)}</span>
                                   {product.stock !== null && product.stock !== undefined && (
                                     <Badge variant="outline" className="text-xs">
                                       <Boxes className="w-3 h-3 mr-1" /> {product.stock}
@@ -564,7 +565,7 @@ export default function Admin() {
                                   )}
                                   {product.isFlashSale && (
                                     <Badge variant="destructive" className="text-xs">
-                                      <Flame className="w-3 h-3 mr-1" /> ${product.flashSalePrice}
+                                      <Flame className="w-3 h-3 mr-1" /> {formatPrice(product.flashSalePrice || 0)}
                                     </Badge>
                                   )}
                                 </div>
@@ -646,7 +647,7 @@ export default function Admin() {
                           <div className="text-xs text-muted-foreground truncate">{order.customerAddress}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold">${order.totalAmount}</div>
+                          <div className="text-lg font-bold">{formatPrice(order.totalAmount)}</div>
                           <Badge variant={order.status === "bajarildi" ? "default" : order.status === "jarayonda" ? "secondary" : "outline"}>
                             {order.status}
                           </Badge>
@@ -753,14 +754,14 @@ export default function Admin() {
                           <img src={product.imageUrl} className="w-16 h-16 rounded object-cover" alt={product.title} />
                           <div className="flex-1 min-w-[200px]">
                             <div className="font-medium">{product.title}</div>
-                            <div className="text-sm text-muted-foreground">Asl narx: ${product.price}</div>
+                            <div className="text-sm text-muted-foreground">Asl narx: {formatPrice(product.price)}</div>
                           </div>
                           
                           {product.isFlashSale ? (
                             <div className="flex items-center gap-4">
                               <div className="text-right">
                                 <Badge variant="destructive" className="mb-1">
-                                  <Flame className="w-3 h-3 mr-1" /> ${product.flashSalePrice}
+                                  <Flame className="w-3 h-3 mr-1" /> {formatPrice(product.flashSalePrice || 0)}
                                 </Badge>
                                 <div className="text-xs text-muted-foreground">
                                   {product.flashSaleEnds && new Date(product.flashSaleEnds).toLocaleString("uz-UZ")}
